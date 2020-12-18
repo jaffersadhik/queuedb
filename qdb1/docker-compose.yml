@@ -1,0 +1,125 @@
+version: '3'
+services:
+  dnreceiver1:
+    image: "winnovature/unitia:production"
+    ports:
+      - "6001:8080"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    depends_on:
+      - "submission"
+    environment:
+      - module=dnreceiver
+      - TZ=Asia/Kolkata
+  dnreceiver2:
+    image: "winnovature/unitia:production"
+    ports:
+      - "6002:8080"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    depends_on:
+      - "submission"
+    environment:
+      - module=dnreceiver
+      - TZ=Asia/Kolkata
+  submission:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    environment:
+      - module=submission
+      - TZ=Asia/Kolkata
+  delivery:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    depends_on:
+      - "scheduledb"
+    environment:
+      - module=delivery
+      - TZ=Asia/Kolkata
+  dnsql:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    depends_on:
+      - "unitiadb"
+    environment:
+      - module=dnsql
+      - TZ=Asia/Kolkata
+  scheduledb:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    environment:
+      - module=scheduledb
+      - TZ=Asia/Kolkata
+  dbtoredis:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    depends_on:
+      - "tablereader"
+    environment:
+      - module=dbtoredis
+      - TZ=Asia/Kolkata
+  tablereader:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    environment:
+      - module=tablereader
+      - TZ=Asia/Kolkata
+  unitiadb:
+    image: "winnovature/mariadb:production"
+    ports:
+      -  "7005:3306"
+    volumes:
+      - "/home/unitia/production/mysql:/var/lib/mysql"
+      - "/home/unitia/production/mysql/my.cnf:/etc/mysql/my.cnf"
+    environment:
+      - MYSQL_ROOT_PASSWORD=kannel 
+      - TZ=Asia/Kolkata
+  kannel1db:
+    image: "winnovature/mariadb:production"
+    ports:
+      -  "7008:3306"
+    volumes:
+      - "/home/unitia/production/kannel1db:/var/lib/mysql"
+      - "/home/unitia/production/kannel1db/my.cnf:/etc/mysql/my.cnf"
+    environment:
+      - MYSQL_ROOT_PASSWORD=kannel
+      - TZ=Asia/Kolkata
+  dn:
+    image: "dn-haproxy:latest"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "dnreceiver1"
+      - "dnreceiver2"
+  queuecheck:
+    image: "winnovature/unitia:production"
+    volumes:
+      - /etc/hosts:/etc/hosts
+      - /home/unitia/:/unitia
+      - /logs:/logs
+    environment:
+      - module=queuecheck
+      - TZ=Asia/Kolkata
+
